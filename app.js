@@ -48,21 +48,6 @@ wpmInput.addEventListener('change', saveSettings);
 repetitionsInput.addEventListener('change', saveSettings);
 languageSelect.addEventListener('change', updateLanguage);
 
-// Populate language select
-function populateLanguageSelect() {
-    languageSelect.innerHTML = '';
-    Object.entries(supportedLanguages).forEach(([langCode, langName]) => {
-        const option = document.createElement('option');
-        option.value = langCode;
-        option.textContent = langName;
-        languageSelect.appendChild(option);
-    });
-    updateLanguage();
-}
-
-// Call this function when the page loads
-populateLanguageSelect();
-
 function updateLanguage() {
     const selectedLang = languageSelect.value;
     const voices = speechSynthesis.getVoices();
@@ -95,6 +80,10 @@ function startPlaying() {
     oscillator.start();
     
     playRandomCharacter();
+    
+    // Update button states
+    playBtn.disabled = true;
+    stopBtn.disabled = false;
 }
 
 function stopPlaying() {
@@ -112,6 +101,10 @@ function stopPlaying() {
         gainNode = null;
     }
     speechSynthesis.cancel();
+    
+    // Update button states
+    playBtn.disabled = false;
+    stopBtn.disabled = true;
 }
 
 function playRandomCharacter() {
@@ -232,3 +225,6 @@ function loadSettings() {
 
 // Initialize voices when they are loaded
 speechSynthesis.onvoiceschanged = updateLanguage;
+
+// Initial button state
+stopBtn.disabled = true;

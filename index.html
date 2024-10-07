@@ -4,29 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CW Trainer</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>CW Trainer</h1>
-        <div class="controls">
-            <button id="playBtn">Play</button>
-            <button id="stopBtn">Stop</button>
-        </div>
-        <div class="settings">
-            <label for="wpm">Speed (WPM):</label>
-            <input type="number" id="wpm" min="5" max="50" value="15">
-            
-            <label for="repetitions">Repetitions:</label>
-            <input type="number" id="repetitions" min="1" max="10" value="3">
-            
-            <label for="languageSelect">Voice Language:</label>
-            <select id="languageSelect">
-                <option value="en-US">English</option>
-                <option value="fr-FR">Français</option>
-            </select>
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h1 class="h3 mb-0">CW Trainer</h1>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <button id="playBtn" class="btn btn-success btn-lg me-2">Play</button>
+                    <button id="stopBtn" class="btn btn-danger btn-lg">Stop</button>
+                </div>
+                <form>
+                    <div class="mb-3">
+                        <label for="wpm" class="form-label">Speed (WPM):</label>
+                        <input type="number" id="wpm" class="form-control" min="5" max="50" value="15">
+                    </div>
+                    <div class="mb-3">
+                        <label for="repetitions" class="form-label">Repetitions:</label>
+                        <input type="number" id="repetitions" class="form-control" min="1" max="10" value="3">
+                    </div>
+                    <div class="mb-3">
+                        <label for="languageSelect" class="form-label">Voice Language:</label>
+                        <select id="languageSelect" class="form-select">
+                            <option value="en-US">English</option>
+                            <option value="fr-FR">Français</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
+    <!-- Bootstrap JS (optional, only needed if you want to use Bootstrap's JavaScript components) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Your custom JavaScript -->
     <script src="app.js"></script>
 </body>
 </html>
