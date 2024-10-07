@@ -3,6 +3,13 @@ let audioContext = null;
 let oscillator = null;
 let gainNode = null;
 
+let morseGain = 0.1;
+let fadeTime = 0.001;
+
+// Initialize speech synthesis
+let speechSynthesis = window.speechSynthesis;
+let speechUtterance = new SpeechSynthesisUtterance();
+
 // Morse code dictionary
 const morseCode = {
     'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
@@ -72,6 +79,7 @@ function stopPlaying() {
         gainNode.disconnect();
         gainNode = null;
     }
+    speechSynthesis.cancel();
 }
 
 function playRandomCharacter() {
@@ -81,23 +89,40 @@ function playRandomCharacter() {
     const randomChar = characters[Math.floor(Math.random() * characters.length)];
     const morseSequence = morseCode[randomChar];
     
-    playMorseSequence(morseSequence, () => {
-        const repetitions = parseInt(repetitionsInput.value);
-        let count = 1;
-        
-        function repeat() {
-            if (count < repetitions && isPlaying) {
-                playMorseSequence(morseSequence, () => {
-                    count++;
-                    currentTimeout = setTimeout(repeat, getCharacterSpace());
-                });
-            } else if (isPlaying) {
-                currentTimeout = setTimeout(playRandomCharacter, getWordSpace());
+    speakCharacter(randomChar, () => {
+        playMorseSequence(morseSequence, () => {
+            const repetitions = parseInt(repetitionsInput.value);
+            let count = 1;
+            
+            function repeat() {
+                if (count < repetitions && isPlaying) {
+                    playMorseSequence(morseSequence, () => {
+                        count++;
+                        if (count === repetitions) {
+                            speakCharacter(randomChar, () => {
+                                currentTimeout = setTimeout(playRandomCharacter, getWordSpace());
+                            });
+                        } else {
+                            currentTimeout = setTimeout(repeat, getCharacterSpace());
+                        }
+                    });
+                } else if (isPlaying) {
+                    speakCharacter(randomChar, () => {
+                        currentTimeout = setTimeout(playRandomCharacter, getWordSpace());
+                    });
+                }
             }
-        }
-        
-        currentTimeout = setTimeout(repeat, getCharacterSpace());
+            
+            currentTimeout = setTimeout(repeat, getCharacterSpace());
+        });
     });
+}
+
+function speakCharacter(character, onComplete) {
+    speechUtterance.text = character;
+    speechUtterance.rate = 1.5;  // Adjust rate as needed
+    speechUtterance.onend = onComplete;
+    speechSynthesis.speak(speechUtterance);
 }
 
 function playMorseSequence(sequence, onComplete) {
@@ -124,8 +149,8 @@ function playTone(duration, onComplete) {
     const currentTime = audioContext.currentTime;
     
     gainNode.gain.setValueAtTime(0, currentTime);
-    gainNode.gain.linearRampToValueAtTime(1, currentTime + 0.001);
-    gainNode.gain.setValueAtTime(1, currentTime + duration - 0.001);
+    gainNode.gain.linearRampToValueAtTime(morseGain, currentTime + fadeTime);
+    gainNode.gain.setValueAtTime(morseGain, currentTime + duration - fadeTime);
     gainNode.gain.linearRampToValueAtTime(0, currentTime + duration);
     
     setTimeout(onComplete, duration * 1000);
