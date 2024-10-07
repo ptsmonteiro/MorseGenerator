@@ -182,7 +182,7 @@ function playTone(duration, onComplete) {
 }
 
 function getDitDuration() {
-    return 60 / (50 * parseInt(wpmInput.value));
+    return 1200.0 / parseInt(wpmInput.value);
 }
 
 function getDahDuration() {
