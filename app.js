@@ -26,10 +26,17 @@ const playBtn = document.getElementById('playBtn');
 const stopBtn = document.getElementById('stopBtn');
 const wpmInput = document.getElementById('wpm');
 const repetitionsInput = document.getElementById('repetitions');
+const languageSelect = document.getElementById('languageSelect');
 
 // Audio parameters
 let isPlaying = false;
 let currentTimeout = null;
+
+// Supported languages
+const supportedLanguages = {
+    'en-US': 'English',
+    'fr-FR': 'Français'
+};
 
 // Load saved settings
 loadSettings();
@@ -39,6 +46,31 @@ playBtn.addEventListener('click', startPlaying);
 stopBtn.addEventListener('click', stopPlaying);
 wpmInput.addEventListener('change', saveSettings);
 repetitionsInput.addEventListener('change', saveSettings);
+languageSelect.addEventListener('change', updateLanguage);
+
+// Populate language select
+function populateLanguageSelect() {
+    languageSelect.innerHTML = '';
+    Object.entries(supportedLanguages).forEach(([langCode, langName]) => {
+        const option = document.createElement('option');
+        option.value = langCode;
+        option.textContent = langName;
+        languageSelect.appendChild(option);
+    });
+    updateLanguage();
+}
+
+// Call this function when the page loads
+populateLanguageSelect();
+
+function updateLanguage() {
+    const selectedLang = languageSelect.value;
+    const voices = speechSynthesis.getVoices();
+    const voice = voices.find(v => v.lang === selectedLang) || voices.find(v => v.lang.startsWith(selectedLang.split('-')[0])) || voices[0];
+    speechUtterance.voice = voice;
+    speechUtterance.lang = voice.lang;
+    saveSettings();
+}
 
 function startPlaying() {
     if (isPlaying) return;
@@ -179,12 +211,24 @@ function getWordSpace() {
 function saveSettings() {
     localStorage.setItem('cwTrainerWPM', wpmInput.value);
     localStorage.setItem('cwTrainerRepetitions', repetitionsInput.value);
+    localStorage.setItem('cwTrainerLanguage', languageSelect.value);
 }
 
 function loadSettings() {
     const savedWPM = localStorage.getItem('cwTrainerWPM');
     const savedRepetitions = localStorage.getItem('cwTrainerRepetitions');
+    const savedLanguage = localStorage.getItem('cwTrainerLanguage');
     
     if (savedWPM) wpmInput.value = savedWPM;
     if (savedRepetitions) repetitionsInput.value = savedRepetitions;
+    if (savedLanguage && Object.keys(supportedLanguages).includes(savedLanguage)) {
+        languageSelect.value = savedLanguage;
+    } else {
+        languageSelect.value = 'en-US'; // Default to English
+    }
+    
+    updateLanguage();
 }
+
+// Initialize voices when they are loaded
+speechSynthesis.onvoiceschanged = updateLanguage;
