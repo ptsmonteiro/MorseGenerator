@@ -14,16 +14,16 @@
         .container {
             max-width: 600px;
         }
-        #frequencyValue {
+        #frequencyValue, #volumeValue {
             width: 60px;
             display: inline-block;
             text-align: right;
         }
-        .frequency-slider-container {
+        .slider-container {
             position: relative;
             padding-bottom: 20px;
         }
-        .frequency-slider-limits {
+        .slider-limits {
             display: flex;
             justify-content: space-between;
             position: absolute;
@@ -93,11 +93,21 @@
                     </div>
                     <div class="mb-3">
                         <label for="toneFrequency" class="form-label">Tone Frequency: <span id="frequencyValue">700</span> Hz</label>
-                        <div class="frequency-slider-container">
+                        <div class="slider-container">
                             <input type="range" id="toneFrequency" class="form-range" min="100" max="3000" step="1" value="700">
-                            <div class="frequency-slider-limits">
+                            <div class="slider-limits">
                                 <span>100 Hz</span>
                                 <span>3000 Hz</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="toneVolume" class="form-label">Tone Volume: <span id="volumeValue">0</span> dB</label>
+                        <div class="slider-container">
+                            <input type="range" id="toneVolume" class="form-range" min="-60" max="0" step="1" value="0">
+                            <div class="slider-limits">
+                                <span>-60 dB</span>
+                                <span>0 dB</span>
                             </div>
                         </div>
                     </div>

@@ -4,7 +4,6 @@ let oscillator = null;
 let gainNode = null;
 let filterNode = null;
 
-let morseGain = 0.1;
 let fadeTime = 0.001;
 
 // Initialize speech synthesis
@@ -30,6 +29,8 @@ const repetitionsInput = document.getElementById('repetitions');
 const languageSelect = document.getElementById('languageSelect');
 const toneFrequencyInput = document.getElementById('toneFrequency');
 const frequencyValueSpan = document.getElementById('frequencyValue');
+const toneVolumeInput = document.getElementById('toneVolume');
+const volumeValueSpan = document.getElementById('volumeValue');
 
 // Audio parameters
 let isPlaying = false;
@@ -52,9 +53,15 @@ repetitionsInput.addEventListener('change', saveSettings);
 languageSelect.addEventListener('change', updateLanguage);
 toneFrequencyInput.addEventListener('input', updateFrequencyDisplay);
 toneFrequencyInput.addEventListener('change', saveSettings);
+toneVolumeInput.addEventListener('input', updateVolumeDisplay);
+toneVolumeInput.addEventListener('change', saveSettings);
 
 function updateFrequencyDisplay() {
     frequencyValueSpan.textContent = toneFrequencyInput.value;
+}
+
+function updateVolumeDisplay() {
+    volumeValueSpan.textContent = toneVolumeInput.value;
 }
 
 function updateLanguage() {
@@ -172,6 +179,8 @@ function playMorseSequence(sequence, onComplete) {
 function playTone(duration, onComplete) {
     const toneFrequency = parseFloat(toneFrequencyInput.value);
     const filterCutoffFrequency = toneFrequency + 200; // Set filter cutoff 200Hz above the tone frequency
+    const toneVolumeDb = parseFloat(toneVolumeInput.value);
+    const toneVolume = Math.pow(10, toneVolumeDb / 20); // Convert dB to linear scale
 
     oscillator = audioContext.createOscillator();
     gainNode = audioContext.createGain();
@@ -185,8 +194,8 @@ function playTone(duration, onComplete) {
     filterNode.Q.setValueAtTime(1, audioContext.currentTime);
 
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(morseGain, audioContext.currentTime + fadeTime);
-    gainNode.gain.setValueAtTime(morseGain, audioContext.currentTime + duration - fadeTime);
+    gainNode.gain.linearRampToValueAtTime(toneVolume, audioContext.currentTime + fadeTime);
+    gainNode.gain.setValueAtTime(toneVolume, audioContext.currentTime + duration - fadeTime);
     gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
 
     oscillator.connect(filterNode);
@@ -229,7 +238,9 @@ function saveSettings() {
     localStorage.setItem('cwTrainerRepetitions', repetitionsInput.value);
     localStorage.setItem('cwTrainerLanguage', languageSelect.value);
     localStorage.setItem('cwTrainerToneFrequency', toneFrequencyInput.value);
+    localStorage.setItem('cwTrainerToneVolume', toneVolumeInput.value);
     updateFrequencyDisplay();
+    updateVolumeDisplay();
 }
 
 function loadSettings() {
@@ -237,6 +248,7 @@ function loadSettings() {
     const savedRepetitions = localStorage.getItem('cwTrainerRepetitions');
     const savedLanguage = localStorage.getItem('cwTrainerLanguage');
     const savedToneFrequency = localStorage.getItem('cwTrainerToneFrequency');
+    const savedToneVolume = localStorage.getItem('cwTrainerToneVolume');
     
     if (savedWPM) wpmInput.value = savedWPM;
     if (savedRepetitions) repetitionsInput.value = savedRepetitions;
@@ -250,8 +262,14 @@ function loadSettings() {
     } else {
         toneFrequencyInput.value = "700"; // Default to 700 Hz if not set
     }
+    if (savedToneVolume) {
+        toneVolumeInput.value = savedToneVolume;
+    } else {
+        toneVolumeInput.value = "0"; // Default to 0 dB if not set
+    }
     
     updateFrequencyDisplay();
+    updateVolumeDisplay();
     updateLanguage();
 }
 
