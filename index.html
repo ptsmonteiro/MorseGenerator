@@ -14,6 +14,54 @@
         .container {
             max-width: 600px;
         }
+        #frequencyValue {
+            width: 60px;
+            display: inline-block;
+            text-align: right;
+        }
+        .frequency-slider-container {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .frequency-slider-limits {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0d6efd;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0d6efd;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -42,6 +90,16 @@
                             <option value="en-US">English</option>
                             <option value="fr-FR">Français</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="toneFrequency" class="form-label">Tone Frequency: <span id="frequencyValue">700</span> Hz</label>
+                        <div class="frequency-slider-container">
+                            <input type="range" id="toneFrequency" class="form-range" min="100" max="3000" step="1" value="700">
+                            <div class="frequency-slider-limits">
+                                <span>100 Hz</span>
+                                <span>3000 Hz</span>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>

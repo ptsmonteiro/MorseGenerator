@@ -6,7 +6,6 @@ let filterNode = null;
 
 let morseGain = 0.1;
 let fadeTime = 0.001;
-const FILTER_CUTOFF_FREQUENCY = 800;
 
 // Initialize speech synthesis
 let speechSynthesis = window.speechSynthesis;
@@ -29,6 +28,8 @@ const stopBtn = document.getElementById('stopBtn');
 const wpmInput = document.getElementById('wpm');
 const repetitionsInput = document.getElementById('repetitions');
 const languageSelect = document.getElementById('languageSelect');
+const toneFrequencyInput = document.getElementById('toneFrequency');
+const frequencyValueSpan = document.getElementById('frequencyValue');
 
 // Audio parameters
 let isPlaying = false;
@@ -49,6 +50,12 @@ stopBtn.addEventListener('click', stopPlaying);
 wpmInput.addEventListener('change', saveSettings);
 repetitionsInput.addEventListener('change', saveSettings);
 languageSelect.addEventListener('change', updateLanguage);
+toneFrequencyInput.addEventListener('input', updateFrequencyDisplay);
+toneFrequencyInput.addEventListener('change', saveSettings);
+
+function updateFrequencyDisplay() {
+    frequencyValueSpan.textContent = toneFrequencyInput.value;
+}
 
 function updateLanguage() {
     const selectedLang = languageSelect.value;
@@ -163,15 +170,18 @@ function playMorseSequence(sequence, onComplete) {
 }
 
 function playTone(duration, onComplete) {
+    const toneFrequency = parseFloat(toneFrequencyInput.value);
+    const filterCutoffFrequency = toneFrequency + 200; // Set filter cutoff 200Hz above the tone frequency
+
     oscillator = audioContext.createOscillator();
     gainNode = audioContext.createGain();
     filterNode = audioContext.createBiquadFilter();
 
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(700, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(toneFrequency, audioContext.currentTime);
 
     filterNode.type = 'lowpass';
-    filterNode.frequency.setValueAtTime(FILTER_CUTOFF_FREQUENCY, audioContext.currentTime);
+    filterNode.frequency.setValueAtTime(filterCutoffFrequency, audioContext.currentTime);
     filterNode.Q.setValueAtTime(1, audioContext.currentTime);
 
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
@@ -218,12 +228,15 @@ function saveSettings() {
     localStorage.setItem('cwTrainerWPM', wpmInput.value);
     localStorage.setItem('cwTrainerRepetitions', repetitionsInput.value);
     localStorage.setItem('cwTrainerLanguage', languageSelect.value);
+    localStorage.setItem('cwTrainerToneFrequency', toneFrequencyInput.value);
+    updateFrequencyDisplay();
 }
 
 function loadSettings() {
     const savedWPM = localStorage.getItem('cwTrainerWPM');
     const savedRepetitions = localStorage.getItem('cwTrainerRepetitions');
     const savedLanguage = localStorage.getItem('cwTrainerLanguage');
+    const savedToneFrequency = localStorage.getItem('cwTrainerToneFrequency');
     
     if (savedWPM) wpmInput.value = savedWPM;
     if (savedRepetitions) repetitionsInput.value = savedRepetitions;
@@ -232,7 +245,13 @@ function loadSettings() {
     } else {
         languageSelect.value = 'en-US'; // Default to English
     }
+    if (savedToneFrequency) {
+        toneFrequencyInput.value = savedToneFrequency;
+    } else {
+        toneFrequencyInput.value = "700"; // Default to 700 Hz if not set
+    }
     
+    updateFrequencyDisplay();
     updateLanguage();
 }
 
