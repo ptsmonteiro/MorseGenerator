@@ -2,9 +2,11 @@
 let audioContext = null;
 let oscillator = null;
 let gainNode = null;
+let filterNode = null;
 
 let morseGain = 0.1;
 let fadeTime = 0.001;
+const FILTER_CUTOFF_FREQUENCY = 800;
 
 // Initialize speech synthesis
 let speechSynthesis = window.speechSynthesis;
@@ -65,25 +67,11 @@ function startPlaying() {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
     
-    // Create oscillator and gain node
-    oscillator = audioContext.createOscillator();
-    gainNode = audioContext.createGain();
-    
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(700, audioContext.currentTime);
-    
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.start();
-    
-    playRandomCharacter();
-    
     // Update button states
     playBtn.disabled = true;
     stopBtn.disabled = false;
+    
+    playRandomCharacter();
 }
 
 function stopPlaying() {
@@ -95,6 +83,10 @@ function stopPlaying() {
         oscillator.stop();
         oscillator.disconnect();
         oscillator = null;
+    }
+    if (filterNode) {
+        filterNode.disconnect();
+        filterNode = null;
     }
     if (gainNode) {
         gainNode.disconnect();
@@ -171,18 +163,39 @@ function playMorseSequence(sequence, onComplete) {
 }
 
 function playTone(duration, onComplete) {
-    const currentTime = audioContext.currentTime;
-    
-    gainNode.gain.setValueAtTime(0, currentTime);
-    gainNode.gain.linearRampToValueAtTime(morseGain, currentTime + fadeTime);
-    gainNode.gain.setValueAtTime(morseGain, currentTime + duration - fadeTime);
-    gainNode.gain.linearRampToValueAtTime(0, currentTime + duration);
-    
-    setTimeout(onComplete, duration * 1000);
+    oscillator = audioContext.createOscillator();
+    gainNode = audioContext.createGain();
+    filterNode = audioContext.createBiquadFilter();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(700, audioContext.currentTime);
+
+    filterNode.type = 'lowpass';
+    filterNode.frequency.setValueAtTime(FILTER_CUTOFF_FREQUENCY, audioContext.currentTime);
+    filterNode.Q.setValueAtTime(1, audioContext.currentTime);
+
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(morseGain, audioContext.currentTime + fadeTime);
+    gainNode.gain.setValueAtTime(morseGain, audioContext.currentTime + duration - fadeTime);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+
+    oscillator.connect(filterNode);
+    filterNode.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + duration);
+
+    oscillator.onended = () => {
+        oscillator.disconnect();
+        filterNode.disconnect();
+        gainNode.disconnect();
+        onComplete();
+    };
 }
 
 function getDitDuration() {
-    return 1200.0 / parseInt(wpmInput.value);
+    return 1.2 / parseInt(wpmInput.value);
 }
 
 function getDahDuration() {
@@ -228,3 +241,16 @@ speechSynthesis.onvoiceschanged = updateLanguage;
 
 // Initial button state
 stopBtn.disabled = true;
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered successfully:', registration.scope);
+            })
+            .catch(error => {
+                console.log('Service Worker registration failed:', error);
+            });
+    });
+}
